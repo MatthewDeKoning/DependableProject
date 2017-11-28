@@ -19,18 +19,91 @@ output X0,X1,X2,XC,XE0,XE1,Y0,Y1,Y2,YC,YE0,YE1;
 /*Your code here*/
 wire [`WIDTH:0] A;
 wire [`WIDTH:0] B;
+wire [`WIDTH:0] C;
 wire [`WIDTH:0] Y;
 wire [`WIDTH:0] X;
 
-A = {A0, A1, A2};
-B = {B0, B1, B2};
-Y = {Y0, Y1, Y2};
-X = {X0, X1, X2};
+wire [1:0] YE;
+wire [1:0] XE;
 
-three_addr(A, B, Y, YC);
-three_addr(A, B, X, XC);
+wire cw_error;
+wire [`WIDTH:0] negative_A;
+wire [`WIDTH:0] negative_B;
+wire [`WIDTH:0] ARG1;
+wire [`WIDTH:0] ARG2;
 
-   
+A = {A2, A1, A0};
+B = {B2, B1, B0};
+C = {C2, C1, C0};
+Y = {Y2, Y1, Y0};
+X = {X2, X1, X0};
+YE = {YE1, YE0};
+XE = {XE1, XE0};
+
+twos_comp(A, negative_A);
+twos_comp(B, negative_B);
+
+code_word_detect(A, B, C, PAR, cw_error);
+
+two_bit_two_one_mux(2'b11, 2'b01, cw_error, YC);
+two_bit_two_one_mux(2'b11, 2'b01, cw_error, XC);
+
+select_arg2(C, B, negative_B, ARG2);
+select_arg1(C, A, negative_A, ARG1);
+
+three_addr(ARG1, ARG2, Y, YC);
+three_addr(ARG1, ARG2, X, XC);
+
+endmodule
+
+/*************************************************************
+Return Two's Complement of a three bit number
+*/
+module twos_comp(a, out);
+input [`WIDTH:0] a;
+output [`WIDTH:0] out;
+
+assign out = ~a + 1'b1;
+
+endmodule
+
+/*************************************************************
+if c[1] is high, negative b, else b
+*/
+module select_arg2(c, a, a_neg, out);
+input [`WIDTH:0] a;
+input [`WIDTH:0] a_neg;
+input [`WIDTH:0] c;
+output [`WIDTH:0] out;
+
+assign out = (c[1]) ? a_neg:a;
+
+endmodule
+
+/*************************************************************
+if c[2] is high, negative a, else a
+*/
+module select_arg1(c, a, a_neg, out);
+input [`WIDTH:0] a;
+input [`WIDTH:0] a_neg;
+input [`WIDTH:0] c;
+output [`WIDTH:0] out;
+
+assign out = (c[2]) ? a_neg:a;
+
+endmodule
+
+/*************************************************************
+Two bit two to one mux
+*/
+module two_bit_two_one_mux(a, b, sel, out);
+input [1:0] a;
+input [1:0] b;
+input sel;
+output [1:0] out;
+
+assign out = (sel)? a:b;
+
 endmodule
 
 /*************************************************************

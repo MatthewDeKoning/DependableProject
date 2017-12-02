@@ -9,7 +9,7 @@
 */
 /**************************************************************************/
 `define WIDTH 2
-
+/*
 module basic_tb();
 reg A0,A1,A2,B0,B1,B2,PAR,C0,C1,C2;
 wire X0,X1,X2,XC,XE0,XE1,Y0,Y1,Y2,YC,YE0,YE1;
@@ -42,7 +42,7 @@ $finish;
 end
 
 endmodule
-
+*/
 module main(A0,A1,A2,B0,B1,B2,PAR,C0,C1,C2,X0,X1,X2,XC,XE0,XE1,
             Y0,Y1,Y2,YC,YE0,YE1);
 
@@ -59,11 +59,20 @@ wire [`WIDTH:0] X;
 wire [1:0] YE;
 wire [1:0] XE;
 
+wire E1, E2, E3, E4, E5;
+wire carry1, carry2, carry3, carry4;
+wire PA1, PA2, PC, PO;
+
 wire cw_error;
 wire [`WIDTH:0] negative_A;
 wire [`WIDTH:0] negative_B;
 wire [`WIDTH:0] ARG1;
 wire [`WIDTH:0] ARG2;
+wire [`WIDTH:0] OUT1;
+wire [`WIDTH:0] OUT2;
+wire [`WIDTH:0] OUT3;
+wire [`WIDTH:0] OUT4;
+
 
 assign A = {A2, A1, A0};
 assign B = {B2, B1, B0};
@@ -78,15 +87,58 @@ twos_comp tc2(B, negative_B);
 
 codeword_detect cw(A, B, {C2, C1, C0}, PAR, cw_error);
 
-two_bit_two_one_mux m1(2'b11, 2'b01, cw_error, {YE1, YE0});
-two_bit_two_one_mux m2(2'b11, 2'b01, cw_error, {XE1, XE0});
+
 
 select_arg2 s1({C2, C1, C0}, B, negative_B, ARG2);
 select_arg1 s2({C2, C1, C0}, A, negative_A, ARG1);
+//{Y2, Y1, Y0}
+//{X2, X1, X0}
+three_addr ta1(ARG1, ARG2, OUT1, carry1);
+three_addr ta2(ARG1, ARG2, OUT2, carry2);
+three_addr ta3(ARG1, ARG2, OUT3, carry3);
+three_addr ta4(ARG1, ARG2, OUT4, carry4);
 
-three_addr ta1(ARG1, ARG2, {Y2, Y1, Y0}, YC);
-three_addr ta2(ARG1, ARG2, {X2, X1, X0}, XC);
+comp_three_bits c1(OUT1, OUT2, E1);
+comp_three_bits c2(OUT3, OUT4, E2);
 
+assign E3 = cw_error | E1;
+assign E4 = cw_error | E2;
+assign Y0 = OUT1[0];
+assign Y1 = OUT1[1];
+assign Y2 = OUT1[2];
+assign YC = carry1;
+assign X0 = OUT3[0];
+assign X1 = OUT3[1];
+assign X2 = OUT3[2];
+assign XC = carry3;
+
+/*
+parity_tree p1(ARG1, PA1);
+parity_tree p2(ARG2, PA2);
+parity_tree p3({C2, C1, C0}, PC);
+parity_tree p4({PA1,PA2, PC}, PO);
+*/
+
+
+two_bit_two_one_mux m1(2'b11, 2'b01, E3, {YE1, YE0});
+two_bit_two_one_mux m2(2'b11, 2'b01, E4, {XE1, XE0});
+
+endmodule
+
+/*************************************************************
+Three bit compare - one for error, zero for equal
+*/
+module comp_three_bits(a, b, out);
+input [`WIDTH:0] a;
+input [`WIDTH:0] b;
+output out;
+
+wire one, two, three;
+
+assign one = a[0] ^ b[0];
+assign two = a[1] ^ b[1];
+assign three = a[2] ^ b[2];
+assign out = one | two | three;
 endmodule
 
 /*************************************************************

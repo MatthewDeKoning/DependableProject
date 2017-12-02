@@ -9,7 +9,7 @@
 */
 /**************************************************************************/
 `define WIDTH 2
-/*
+
 module basic_tb();
 reg A0,A1,A2,B0,B1,B2,PAR,C0,C1,C2;
 wire X0,X1,X2,XC,XE0,XE1,Y0,Y1,Y2,YC,YE0,YE1;
@@ -17,32 +17,32 @@ wire X0,X1,X2,XC,XE0,XE1,Y0,Y1,Y2,YC,YE0,YE1;
 main m(A0,A1,A2,B0,B1,B2,PAR,C0,C1,C2,X0,X1,X2,XC,XE0,XE1,Y0,Y1,Y2,YC,YE0,YE1);
 
 initial begin
-A0 = 1;
-A1 = 0;
+A0 = 0;
+A1 = 1;
 A2 = 0;
 B0 = 0;
 B1 = 0;
 B2 = 0;
-PAR = 1;
+PAR = 0;
 C0 = 1;
 C1 = 0;
 C2 = 0;
 #100
 B0 = 1;
-PAR = 0;
+PAR = 1;
 C0 = 0;
 C1 = 1;
 #100
 B1 = 1;
 C1 = 0;
 C2 = 1;
-PAR = 1;
+PAR = 0;
 #100
 $finish;
 end
 
 endmodule
-*/
+
 module main(A0,A1,A2,B0,B1,B2,PAR,C0,C1,C2,X0,X1,X2,XC,XE0,XE1,
             Y0,Y1,Y2,YC,YE0,YE1);
 
@@ -159,7 +159,7 @@ wire control, parity;
 control_check c1(c, control);
 parity_check c2(a, b, p, parity);
 
-assign e = ~(control & (~parity));
+assign e = ~(control & parity);
 
 endmodule
 /*************************************************************

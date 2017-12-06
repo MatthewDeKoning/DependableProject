@@ -109,21 +109,28 @@ wire [1:0] YE;
 wire [1:0] XE;
 
 wire E1, E2, E3, E4, E5, E6;
+//wire E1, E2, E3, E4;
 wire carry1, carry2, carry3, carry4;
 //wire PA1, PA2, PC, PO;
 
-wire cw_error;
-wire [`WIDTH:0] negative_A;
-wire [`WIDTH:0] negative_B;
-wire [`WIDTH:0] ARG1;
-wire [`WIDTH:0] ARG2;
+wire cw_error1;
+wire cw_error2;
+wire [`WIDTH:0] negative_A_FIRST;
+wire [`WIDTH:0] negative_B_FIRST;
+wire [`WIDTH:0] negative_A_SECOND;
+wire [`WIDTH:0] negative_B_SECOND;
+wire [`WIDTH:0] negative_B_THIRD;
+wire [`WIDTH:0] ARG1_FIRST;
+wire [`WIDTH:0] ARG2_FIRST;
+wire [`WIDTH:0] ARG1_SECOND;
+wire [`WIDTH:0] ARG2_SECOND;
 wire [`WIDTH:0] OUT1;
 wire [`WIDTH:0] OUT2;
 wire [`WIDTH:0] OUT3;
 wire [`WIDTH:0] OUT4;
-wire [1:0] IR;
-wire [1:0] OR1;
-wire [1:0] OR2;
+//wire [1:0] IR;
+//wire [1:0] OR1;
+//wire [1:0] OR2;
 
 
 assign A = {A2, A1, A0};
@@ -134,26 +141,38 @@ assign X = {X2, X1, X0};
 assign YE = {YE1, YE0};
 assign XE = {XE1, XE0};
 
-twos_comp tc1(A, negative_A);
-twos_comp tc2(B, negative_B);
+codeword_detect cw1(A, B, {C2, C1, C0}, PAR, cw_error1);
+codeword_detect cw2(A, B, {C2, C1, C0}, PAR, cw_error2);
 
-codeword_detect cw(A, B, {C2, C1, C0}, PAR, cw_error);
+twos_comp tc1_FIRST(A, negative_A_FIRST);
+twos_comp tc2_FIRST(B, negative_B_FIRST);
 
+twos_comp tc1_SECOND(A, negative_A_SECOND);
+twos_comp tc2_SECOND(B, negative_B_SECOND);
 
+select_arg2 s1_FIRST({C2, C1, C0}, B, negative_B_FIRST, ARG2_FIRST);
+select_arg1 s2_FIRST({C2, C1, C0}, A, negative_A_FIRST, ARG1_FIRST);
 
-select_arg2 s1({C2, C1, C0}, B, negative_B, ARG2);
-select_arg1 s2({C2, C1, C0}, A, negative_A, ARG1);
+select_arg2 s1_SECOND({C2, C1, C0}, B, negative_B_SECOND, ARG2_SECOND);
+select_arg1 s2_SECOND({C2, C1, C0}, A, negative_A_SECOND, ARG1_SECOND);
 
-three_addr ta1(ARG1, ARG2, OUT1, carry1);
-three_addr ta2(ARG1, ARG2, OUT2, carry2);
-three_addr ta3(ARG1, ARG2, OUT3, carry3);
-three_addr ta4(ARG1, ARG2, OUT4, carry4);
+comp_three_bits arg_c1(ARG2_FIRST, ARG2_SECOND, E5);
+comp_three_bits arg_c2(ARG1_FIRST, ARG1_SECOND, E6);
+
+three_addr ta1(ARG1_FIRST, ARG2_FIRST, OUT1, carry1);
+three_addr ta2(ARG1_FIRST, ARG2_FIRST, OUT2, carry2);
+three_addr ta3(ARG1_SECOND, ARG2_SECOND, OUT3, carry3);
+three_addr ta4(ARG1_SECOND, ARG2_SECOND, OUT4, carry4);
+//three_addr ta3(ARG1_FIRST, ARG2_FIRST, OUT3, carry3);
+//three_addr ta4(ARG1_FIRST, ARG2_FIRST, OUT4, carry4);
 
 comp_three_bits c1(OUT1, OUT2, E1);
 comp_three_bits c2(OUT3, OUT4, E2);
 
-assign E3 = cw_error | E1 | E5;
-assign E4 = cw_error | E2 | E6;
+assign E3 = cw_error1 | E1 | E5;
+assign E4 = cw_error2 | E2 | E6;
+//assign E3 = cw_error | E1;
+//assign E4 = cw_error | E2;
 assign Y0 = OUT1[0];
 assign Y1 = OUT1[1];
 assign Y2 = OUT1[2];
@@ -163,12 +182,12 @@ assign X1 = OUT3[1];
 assign X2 = OUT3[2];
 assign XC = carry3;
 
-input_residue i_r({1'b0, ARG1}, {1'b0, ARG2}, IR);
-residue r1({carry1, OUT1}, OR1);
-residue r2({carry3, OUT3}, OR2);
+//input_residue i_r({1'b0, ARG1}, {1'b0, ARG2}, IR);
+//residue r1({carry1, OUT1}, OR1);
+//residue r2({carry3, OUT3}, OR2);
 
-comp_two_bits c3(IR, OR1, E5);
-comp_two_bits c4(IR, OR2, E6);
+//comp_two_bits c3(IR, OR1, E5);
+//comp_two_bits c4(IR, OR2, E6);
 
 /*
 parity_tree p1(ARG1, PA1);
@@ -176,7 +195,6 @@ parity_tree p2(ARG2, PA2);
 parity_tree p3({C2, C1, C0}, PC);
 parity_tree p4({PA1,PA2, PC}, PO);
 */
-
 
 two_bit_two_one_mux m1(2'b11, 2'b01, E3, {YE1, YE0});
 two_bit_two_one_mux m2(2'b11, 2'b01, E4, {XE1, XE0});
@@ -198,6 +216,22 @@ endmodule
 Three bit compare - one for error, zero for equal
 */
 module comp_three_bits(a, b, out);
+input [`WIDTH:0] a;
+input [`WIDTH:0] b;
+output out;
+
+wire one, two, three;
+
+assign one = a[0] ^ b[0];
+assign two = a[1] ^ b[1];
+assign three = a[2] ^ b[2];
+assign out = one | two | three;
+endmodule
+
+/*************************************************************
+Four bit compare - one for error, zero for equal
+*/
+module comp_four_bits(a, b, out);
 input [`WIDTH:0] a;
 input [`WIDTH:0] b;
 output out;

@@ -166,8 +166,8 @@ three_addr ta4(ARG1_SECOND, ARG2_SECOND, OUT4, carry4);
 //three_addr ta3(ARG1_FIRST, ARG2_FIRST, OUT3, carry3);
 //three_addr ta4(ARG1_FIRST, ARG2_FIRST, OUT4, carry4);
 
-comp_three_bits c1(OUT1, OUT2, E1);
-comp_three_bits c2(OUT3, OUT4, E2);
+comp_four_bits c1(OUT1, OUT2, carry1, carry2, E1);
+comp_four_bits c2(OUT3, OUT4, carry3, carry4, E2);
 
 assign E3 = cw_error1 | E1 | E5;
 assign E4 = cw_error2 | E2 | E6;
@@ -231,17 +231,20 @@ endmodule
 /*************************************************************
 Four bit compare - one for error, zero for equal
 */
-module comp_four_bits(a, b, out);
+module comp_four_bits(a, b, c1, c2, out);
 input [`WIDTH:0] a;
 input [`WIDTH:0] b;
+input c1;
+input c2;
 output out;
 
-wire one, two, three;
+wire one, two, three, four;
 
 assign one = a[0] ^ b[0];
 assign two = a[1] ^ b[1];
 assign three = a[2] ^ b[2];
-assign out = one | two | three;
+assign four = c1 ^ c2;
+assign out = one | two | three | four;
 endmodule
 
 /*************************************************************

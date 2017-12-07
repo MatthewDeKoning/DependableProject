@@ -9,6 +9,41 @@
 */
 /**************************************************************************/
 `define WIDTH 2
+
+module basic_tb();
+reg A0,A1,A2,B0,B1,B2,PAR,C0,C1,C2;
+wire X0,X1,X2,XC,XE0,XE1,Y0,Y1,Y2,YC,YE0,YE1;
+
+main m(A0,A1,A2,B0,B1,B2,PAR,C0,C1,C2,X0,X1,X2,XC,XE0,XE1,Y0,Y1,Y2,YC,YE0,YE1);
+
+initial begin
+A0 = 0;
+A1 = 1;
+A2 = 0;
+B0 = 0;
+B1 = 0;
+B2 = 0;
+PAR = 0;
+C0 = 1;
+C1 = 0;
+C2 = 0;
+#100
+B0 = 1;
+PAR = 1;
+C0 = 0;
+C1 = 1;
+#100
+B1 = 1;
+C1 = 0;
+C2 = 1;
+PAR = 0;
+#100
+$finish;
+end
+
+endmodule
+
+
 module main(A0,A1,A2,B0,B1,B2,PAR,C0,C1,C2,X0,X1,X2,XC,XE0,XE1,
             Y0,Y1,Y2,YC,YE0,YE1);
 
@@ -91,8 +126,8 @@ three_addr_complement ta4(ARG1_SECOND, ARG2_SECOND, OUT4, carry4);
 two_rail_tree tree_1(OUT1, OUT2, carry1, carry2, two_rail_FIRST, two_rail_FIRST_N);
 two_rail_tree tree_2(OUT3, OUT4, carry3, carry4, two_rail_SECOND, two_rail_SECOND_N);
 
-basic_two_rail(two_rail_FIRST, two_rail_FIRST_N, cw_error1, arg1_Error_N, YE0, YE1);
-basic_two_rail(two_rail_SECOND, two_rail_SECOND_N, cw_error2, arg2_Error_N, XE0, XE1);
+basic_two_rail two_rail_1(two_rail_FIRST, two_rail_FIRST_N, cw_error1, arg1_Error_N, YE0, YE1);
+basic_two_rail two_rail_2(two_rail_SECOND, two_rail_SECOND_N, cw_error2, arg2_Error_N, XE0, XE1);
 
 
 //assign E3 = cw_error1 | arg1_Error;
@@ -419,10 +454,10 @@ wire intermediate_aN;
 wire intermediate_b;
 wire intermediate_bN;
 
-basic_two_rail(a[0], b[0], a[1], b[1], intermediate_a, intermediate_aN);
-basic_two_rail(a[2], b[2], c1, c2, intermediate_b, intermediate_bN);
+basic_two_rail two_rail_1(a[0], b[0], a[1], b[1], intermediate_a, intermediate_aN);
+basic_two_rail two_rail_2(a[2], b[2], c1, c2, intermediate_b, intermediate_bN);
 
-basic_two_rail(intermediate_a, intermediate_aN, intermediate_b, intermediate_bN, out, outN);
+basic_two_rail two_rail_3(intermediate_a, intermediate_aN, intermediate_b, intermediate_bN, out, outN);
 endmodule
 
 /*************************************************************

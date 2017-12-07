@@ -89,7 +89,7 @@ three_addr_complement ta4(ARG1_SECOND, ARG2_SECOND, OUT4, carry4);
 //comp_four_bits c2(OUT3, OUT4, carry3, carry4, E2);
 
 two_rail_tree tree_1(OUT1, OUT2, carry1, carry2, two_rail_FIRST, two_rail_FIRST_N);
-two_rail_tree tree_2(OUT3, OUT4, carry1, carry2, two_rail_SECOND, two_rail_SECOND_N);
+two_rail_tree tree_2(OUT3, OUT4, carry3, carry4, two_rail_SECOND, two_rail_SECOND_N);
 
 basic_two_rail(two_rail_FIRST, two_rail_FIRST_N, cw_error1, arg1_Error_N, YE0, YE1);
 basic_two_rail(two_rail_SECOND, two_rail_SECOND_N, cw_error2, arg2_Error_N, XE0, XE1);

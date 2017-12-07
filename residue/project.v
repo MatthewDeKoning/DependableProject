@@ -9,7 +9,7 @@
 */
 /**************************************************************************/
 `define WIDTH 2
-
+/*
 module basic_tb();
 reg A0,A1,A2,B0,B1,B2,PAR,C0,C1,C2;
 wire X0,X1,X2,XC,XE0,XE1,Y0,Y1,Y2,YC,YE0,YE1;
@@ -42,7 +42,7 @@ $finish;
 end
 
 endmodule
-
+*/
 
 module main(A0,A1,A2,B0,B1,B2,PAR,C0,C1,C2,X0,X1,X2,XC,XE0,XE1,
             Y0,Y1,Y2,YC,YE0,YE1);
@@ -60,8 +60,10 @@ wire [`WIDTH:0] X;
 wire [1:0] YE;
 wire [1:0] XE;
 
-wire arg1_Error, arg2_Error;
-wire arg1_Error_N, arg2_Error_N;
+wire arg_ERROR_FIRST, arg_ERROR_FIRST_N;
+wire arg_ERROR_SECOND, arg_ERROR_SECOND_N;
+wire arg1_Error_FIRST, arg2_Error_FIRST;
+wire arg1_Error_SECOND, arg2_Error_SECOND;
 //wire E1, E2, E3, E4;
 wire carry1, carry2, carry3, carry4;
 //wire PA1, PA2, PC, PO;
@@ -72,11 +74,18 @@ wire [`WIDTH:0] negative_A_FIRST;
 wire [`WIDTH:0] negative_B_FIRST;
 wire [`WIDTH:0] negative_A_SECOND;
 wire [`WIDTH:0] negative_B_SECOND;
+wire [`WIDTH:0] negative_A_THIRD;
 wire [`WIDTH:0] negative_B_THIRD;
+wire [`WIDTH:0] negative_A_FOURTH;
+wire [`WIDTH:0] negative_B_FOURTH;
 wire [`WIDTH:0] ARG1_FIRST;
 wire [`WIDTH:0] ARG2_FIRST;
 wire [`WIDTH:0] ARG1_SECOND;
 wire [`WIDTH:0] ARG2_SECOND;
+wire [`WIDTH:0] ARG1_THIRD;
+wire [`WIDTH:0] ARG2_THIRD;
+wire [`WIDTH:0] ARG1_FOURTH;
+wire [`WIDTH:0] ARG2_FOURTH;
 wire [`WIDTH:0] OUT1;
 wire [`WIDTH:0] OUT2;
 wire [`WIDTH:0] OUT3;
@@ -100,18 +109,30 @@ codeword_detect cw2(A, B, {C2, C1, C0}, PAR, cw_error2);
 
 twos_comp tc1_FIRST(A, negative_A_FIRST);
 twos_comp tc2_FIRST(B, negative_B_FIRST);
-twos_comp tc1_SECOND(A, negative_A_SECOND);
-twos_comp tc2_SECOND(B, negative_B_SECOND);
+twos_comp tc3_SECOND(A, negative_A_SECOND);
+twos_comp tc4_SECOND(B, negative_B_SECOND);
+twos_comp tc5_FIRST(A, negative_A_THIRD);
+twos_comp tc6_FIRST(B, negative_B_THIRD);
+twos_comp tc7_SECOND(A, negative_A_FOURTH);
+twos_comp tc8_SECOND(B, negative_B_FOURTH);
 
 select_arg2 s1_FIRST({C2, C1, C0}, B, negative_B_FIRST, ARG2_FIRST);
 select_arg1 s2_FIRST({C2, C1, C0}, A, negative_A_FIRST, ARG1_FIRST);
-select_arg2 s1_SECOND({C2, C1, C0}, B, negative_B_SECOND, ARG2_SECOND);
-select_arg1 s2_SECOND({C2, C1, C0}, A, negative_A_SECOND, ARG1_SECOND);
+select_arg2 s3_SECOND({C2, C1, C0}, B, negative_B_SECOND, ARG2_SECOND);
+select_arg1 s4_SECOND({C2, C1, C0}, A, negative_A_SECOND, ARG1_SECOND);
+select_arg2 s5_FIRST({C2, C1, C0}, B, negative_B_THIRD, ARG2_THIRD);
+select_arg1 s6_FIRST({C2, C1, C0}, A, negative_A_THIRD, ARG1_THIRD);
+select_arg2 s7_SECOND({C2, C1, C0}, B, negative_B_FOURTH, ARG2_FOURTH);
+select_arg1 s8_SECOND({C2, C1, C0}, A, negative_A_FOURTH, ARG1_FOURTH);
 
-comp_three_bits arg_c1(ARG2_FIRST, ARG2_SECOND, arg2_Error);
-comp_three_bits arg_c2(ARG1_FIRST, ARG1_SECOND, arg1_Error);
-assign arg2_Error_N = ~arg2_Error;
-assign arg1_Error_N = ~arg1_Error;
+comp_three_bits arg_c1(ARG2_FIRST, ARG2_THIRD, arg2_Error_FIRST);
+comp_three_bits arg_c2(ARG1_FIRST, ARG1_THIRD, arg1_Error_FIRST);
+comp_three_bits arg_c3(ARG2_SECOND, ARG2_FOURTH, arg2_Error_SECOND);
+comp_three_bits arg_c4(ARG1_SECOND, ARG1_FOURTH, arg1_Error_SECOND);
+assign arg_ERROR_FIRST = arg2_Error_FIRST | arg1_Error_FIRST;
+assign arg_ERROR_SECOND = arg2_Error_SECOND | arg1_Error_SECOND;
+assign arg_ERROR_FIRST_N = ~arg_ERROR_FIRST;
+assign arg_ERROR_SECOND_N = ~arg_ERROR_SECOND;
 
 three_addr ta1(ARG1_FIRST, ARG2_FIRST, OUT1, carry1);
 three_addr_complement ta2(ARG1_FIRST, ARG2_FIRST, OUT2, carry2);
@@ -125,10 +146,11 @@ three_addr_complement ta4(ARG1_SECOND, ARG2_SECOND, OUT4, carry4);
 
 two_rail_tree tree_1(OUT1, OUT2, carry1, carry2, two_rail_FIRST, two_rail_FIRST_N);
 two_rail_tree tree_2(OUT3, OUT4, carry3, carry4, two_rail_SECOND, two_rail_SECOND_N);
+//two_rail_tree tree_1(OUT1, OUT2, carry1, carry2, YE0, YE1);
+//two_rail_tree tree_2(OUT3, OUT4, carry3, carry4, XE0, XE1);
 
-basic_two_rail two_rail_1(two_rail_FIRST, two_rail_FIRST_N, cw_error1, arg1_Error_N, YE0, YE1);
-basic_two_rail two_rail_2(two_rail_SECOND, two_rail_SECOND_N, cw_error2, arg2_Error_N, XE0, XE1);
-
+basic_two_rail two_rail_1(two_rail_FIRST, two_rail_FIRST_N, cw_error1, arg_ERROR_FIRST_N, YE0, YE1);
+basic_two_rail two_rail_2(two_rail_SECOND, two_rail_SECOND_N, cw_error2, arg_ERROR_SECOND_N, XE0, XE1);
 
 //assign E3 = cw_error1 | arg1_Error;
 //assign E4 = cw_error2 | arg2_Error;

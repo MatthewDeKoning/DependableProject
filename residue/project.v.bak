@@ -127,8 +127,8 @@ select_arg1 s8_SECOND({C2, C1, C0}, A, negative_A_FOURTH, ARG1_FOURTH);
 
 comp_three_bits arg_c1(ARG2_FIRST, ARG2_THIRD, arg2_Error_FIRST);
 comp_three_bits arg_c2(ARG1_FIRST, ARG1_THIRD, arg1_Error_FIRST);
-comp_three_bits arg_c3(ARG2_SECOND, ARG2_THIRD, arg2_Error_SECOND);
-comp_three_bits arg_c4(ARG1_SECOND, ARG1_THIRD, arg1_Error_SECOND);
+comp_three_bits arg_c3(ARG2_SECOND, ARG2_FOURTH, arg2_Error_SECOND);
+comp_three_bits arg_c4(ARG1_SECOND, ARG1_FOURTH, arg1_Error_SECOND);
 assign arg_ERROR_FIRST = arg2_Error_FIRST | arg1_Error_FIRST;
 assign arg_ERROR_SECOND = arg2_Error_SECOND | arg1_Error_SECOND;
 assign arg_ERROR_FIRST_N = ~arg_ERROR_FIRST;

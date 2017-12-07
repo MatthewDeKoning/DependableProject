@@ -64,9 +64,7 @@ wire arg_ERROR_FIRST, arg_ERROR_FIRST_N;
 wire arg_ERROR_SECOND, arg_ERROR_SECOND_N;
 wire arg1_Error_FIRST, arg2_Error_FIRST;
 wire arg1_Error_SECOND, arg2_Error_SECOND;
-//wire E1, E2, E3, E4;
 wire carry1, carry2, carry3, carry4;
-//wire PA1, PA2, PC, PO;
 
 wire cw_error1;
 wire cw_error2;
@@ -90,9 +88,6 @@ wire [`WIDTH:0] OUT1;
 wire [`WIDTH:0] OUT2;
 wire [`WIDTH:0] OUT3;
 wire [`WIDTH:0] OUT4;
-//wire [1:0] IR;
-//wire [1:0] OR1;
-//wire [1:0] OR2;
 
 wire two_rail_FIRST, two_rail_FIRST_N, two_rail_SECOND, two_rail_SECOND_N;
 
@@ -138,24 +133,14 @@ three_addr ta1(ARG1_FIRST, ARG2_FIRST, OUT1, carry1);
 three_addr_complement ta2(ARG1_FIRST, ARG2_FIRST, OUT2, carry2);
 three_addr ta3(ARG1_SECOND, ARG2_SECOND, OUT3, carry3);
 three_addr_complement ta4(ARG1_SECOND, ARG2_SECOND, OUT4, carry4);
-//three_addr ta3(ARG1_FIRST, ARG2_FIRST, OUT3, carry3);
-//three_addr ta4(ARG1_FIRST, ARG2_FIRST, OUT4, carry4);
-
-//comp_four_bits c1(OUT1, OUT2, carry1, carry2, E1);
-//comp_four_bits c2(OUT3, OUT4, carry3, carry4, E2);
 
 two_rail_tree tree_1(OUT1, OUT2, carry1, carry2, two_rail_FIRST, two_rail_FIRST_N);
 two_rail_tree tree_2(OUT3, OUT4, carry3, carry4, two_rail_SECOND, two_rail_SECOND_N);
-//two_rail_tree tree_1(OUT1, OUT2, carry1, carry2, YE0, YE1);
-//two_rail_tree tree_2(OUT3, OUT4, carry3, carry4, XE0, XE1);
+
 
 basic_two_rail two_rail_1(two_rail_FIRST, two_rail_FIRST_N, cw_error1, arg_ERROR_FIRST_N, YE0, YE1);
 basic_two_rail two_rail_2(two_rail_SECOND, two_rail_SECOND_N, cw_error2, arg_ERROR_SECOND_N, XE0, XE1);
 
-//assign E3 = cw_error1 | arg1_Error;
-//assign E4 = cw_error2 | arg2_Error;
-//assign E3 = cw_error | E1;
-//assign E4 = cw_error | E2;
 assign Y0 = OUT1[0];
 assign Y1 = OUT1[1];
 assign Y2 = OUT1[2];
@@ -164,23 +149,6 @@ assign X0 = OUT3[0];
 assign X1 = OUT3[1];
 assign X2 = OUT3[2];
 assign XC = carry3;
-
-//input_residue i_r({1'b0, ARG1}, {1'b0, ARG2}, IR);
-//residue r1({carry1, OUT1}, OR1);
-//residue r2({carry3, OUT3}, OR2);
-
-//comp_two_bits c3(IR, OR1, E5);
-//comp_two_bits c4(IR, OR2, E6);
-
-/*
-parity_tree p1(ARG1, PA1);
-parity_tree p2(ARG2, PA2);
-parity_tree p3({C2, C1, C0}, PC);
-parity_tree p4({PA1,PA2, PC}, PO);
-*/
-
-//two_bit_two_one_mux m1(2'b11, 2'b01, E3, {YE1, YE0});
-//two_bit_two_one_mux m2(2'b11, 2'b01, E4, {XE1, XE0});
 
 endmodule
 
@@ -480,40 +448,4 @@ basic_two_rail two_rail_1(a[0], b[0], a[1], b[1], intermediate_a, intermediate_a
 basic_two_rail two_rail_2(a[2], b[2], c1, c2, intermediate_b, intermediate_bN);
 
 basic_two_rail two_rail_3(intermediate_a, intermediate_aN, intermediate_b, intermediate_bN, out, outN);
-endmodule
-
-/*************************************************************
-input_residue
-*************************************************************/
-module input_residue(A, B, O);
-input [3:0] A;
-input [3:0] B;
-output [1:0] O;
-wire [1:0] AR;
-wire [1:0] BR;
-wire [1:0] RR;
-wire cout;
-
-residue r1(A, AR);
-residue r2(B, BR);
-two_bit_adder a1(AR, BR, RR, 1'b0, cout);
-residue r3({1'b0, cout, RR}, O);
-endmodule
-
-/*************************************************************
-residue
-*************************************************************/
-module residue(A, O);
-input [3:0] A;
-output [1:0] O;
-
-wire cout;
-wire not_used;
-wire select;
-wire [1:0] output1;
-wire [1:0] output2;
-two_bit_adder a1({A[3], A[2]}, {A[1], A[0]}, output1, 1'b0, cout);
-two_bit_adder a2(output1, 2'b00, output2, cout, not_used);
-assign select = output2[0]&output2[1];
-assign O = (select)? 2'b00: output2;
 endmodule
